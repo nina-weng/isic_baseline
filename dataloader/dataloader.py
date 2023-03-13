@@ -20,14 +20,16 @@ from argparse import ArgumentParser
 
 
 #---- Notice-----#
-# In order to use this dataloader
+# In order to use this dataloader, please run:
+# 1. data-preprocess.ipynb in ./notebooks, for a better organized csv file
+# 2. preprocess.py in ./data_preprocess, for images in the same and smaller size
 
 
 
 
 class ISICDataset(Dataset):
-    def __init__(self, img_data_dir, csv_file_img, image_size, augmentation=False, pseudo_rgb = True):
-        self.data = pd.read_csv(csv_file_img)
+    def __init__(self, img_data_dir, df_data, image_size, augmentation=False, pseudo_rgb = True):
+        self.df_data = df_data
         self.image_size = image_size
         self.do_augment = augmentation
         self.pseudo_rgb = pseudo_rgb
@@ -41,17 +43,17 @@ class ISICDataset(Dataset):
         ])
 
         self.samples = []
-        for idx, _ in enumerate(tqdm(range(len(self.data)), desc='Loading Data')):
-            img_path = img_data_dir + self.data.loc[idx, 'path_preproc']
+        for idx, _ in enumerate(tqdm(range(len(self.df_data)), desc='Loading Data')):
+            img_path = img_data_dir + self.df_data.loc[idx, 'path_preproc']
             img_label = np.zeros(len(self.labels), dtype='float32')
             for i in range(0, len(self.labels)):
-                img_label[i] = np.array(self.data.loc[idx, self.labels[i].strip()] == 1, dtype='float32')
+                img_label[i] = np.array(self.df_data.loc[idx, self.labels[i].strip()] == 1, dtype='float32')
 
             sample = {'image_path': img_path, 'label': img_label}
             self.samples.append(sample)
 
     def __len__(self):
-        return len(self.data)
+        return len(self.df_data)
 
     def __getitem__(self, item):
         sample = self.get_sample(item)
@@ -72,3 +74,47 @@ class ISICDataset(Dataset):
         image = imread(sample['image_path']).astype(np.float32)
 
         return {'image': image, 'label': sample['label']}
+
+
+
+class ISICDataModule(pl.LightningDataModule):
+    def __init__(self, img_data_dir,csv_file_img, image_size, pseudo_rgb, batch_size, num_workers):
+        super().__init__()
+        self.img_data_dir = img_data_dir
+        self.csv_file_img = csv_file_img
+
+        df_train,df_valid,df_test = self.dataset_split(self.csv_file_img)
+        self.df_train = df_train
+        self.df_valid = df_valid
+        self.df_test = df_test
+
+        self.image_size = image_size
+        self.batch_size = batch_size
+        self.num_workers = num_workers
+
+
+        self.train_set = ISICDataset(self.img_data_dir,self.df_train, self.image_size, augmentation=True, pseudo_rgb=pseudo_rgb)
+        self.val_set = ISICDataset(self.img_data_dir,self.df_valid, self.image_size, augmentation=False, pseudo_rgb=pseudo_rgb)
+        self.test_set = ISICDataset(self.img_data_dir,self.df_test, self.image_size, augmentation=False, pseudo_rgb=pseudo_rgb)
+
+        print('#train: ', len(self.train_set))
+        print('#val:   ', len(self.val_set))
+        print('#test:  ', len(self.test_set))
+
+    def train_dataloader(self):
+        return DataLoader(self.train_set, self.batch_size, shuffle=True, num_workers=self.num_workers)
+
+    def val_dataloader(self):
+        return DataLoader(self.val_set, self.batch_size, shuffle=False, num_workers=self.num_workers)
+
+    def test_dataloader(self):
+        return DataLoader(self.test_set, self.batch_size, shuffle=False, num_workers=self.num_workers)
+
+    def dataset_split(self,csv_all_img):
+        df= pd.read_csv(csv_all_img)
+        df_train = df[df.split == "train"]
+        df_val = df[df.split == "validate"]
+        df_test = df[df.split == "test"]
+        return df_train,df_val,df_test
+
+
