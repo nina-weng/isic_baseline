@@ -34,8 +34,10 @@ class ISICDataset(Dataset):
         self.do_augment = augmentation
         self.pseudo_rgb = pseudo_rgb
 
-        self.labels = ['melanoma','nevus','basal cell carcinoma','actinic keratosis','benign keratosis','dermatofibroma',
-          'vascular lesion','squamous cell carcinoma','others']
+        # self.labels = ['melanoma','nevus','basal cell carcinoma','actinic keratosis','benign keratosis','dermatofibroma',
+        #   'vascular lesion','squamous cell carcinoma','others']
+        self.labels=['MEL',
+       'NV', 'BCC', 'AK', 'BKL', 'DF', 'VASC', 'SCC', 'UNK']
 
         self.augment = T.Compose([
             T.RandomHorizontalFlip(p=0.5),

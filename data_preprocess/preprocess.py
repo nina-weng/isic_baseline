@@ -7,17 +7,17 @@ import os
 from tqdm import tqdm
 import numpy as np
 
-subset='ISIC_2019_' # or ''
+FOLDER_SPECIFIC='ISIC_2019_' # or ''
 
 # point to the parent directory that contains the folder 'isic_images'
 img_data_dir = 'D:\\ninavv\\phd\\data\\isic\\'
-csv_file = '../datafiles/'+subset+'metadata-clean-split.csv'
+csv_file = '../datafiles/'+FOLDER_SPECIFIC+'metadata-clean-split.csv'
 
 df = pd.read_csv(csv_file,header=0)
 
 df['path_preproc'] = df['path']
 
-preproc_dir = subset+'preproc_224x224/'
+preproc_dir = FOLDER_SPECIFIC+'preproc_224x224/'
 out_dir = img_data_dir
 
 if not os.path.exists(out_dir + preproc_dir):
@@ -26,7 +26,7 @@ if not os.path.exists(out_dir + preproc_dir):
 for idx, p in enumerate(tqdm(df['path'])):
 
     split =  p.split("/")
-    preproc_filename = split[1]
+    preproc_filename = split[-1]
     df.loc[idx, 'path_preproc'] = preproc_dir + preproc_filename
     out_path = out_dir + preproc_dir + preproc_filename
 

@@ -1,5 +1,6 @@
 from dataloader.dataloader import ISICDataset,ISICDataModule
 from models import ResNet,DenseNet
+from data_preprocess.preprocess import FOLDER_SPECIFIC
 
 import os
 import torch
@@ -13,8 +14,7 @@ from skimage.io import imsave
 from tqdm import tqdm
 from argparse import ArgumentParser
 
-disease_labels = ['melanoma','nevus','basal cell carcinoma','actinic keratosis','benign keratosis','dermatofibroma',
-          'vascular lesion','squamous cell carcinoma','others']
+disease_labels = ['MEL', 'NV', 'BCC', 'AK', 'BKL', 'DF', 'VASC', 'SCC', 'UNK']
 
 num_classes = len(disease_labels)
 image_size = (224, 224)
@@ -22,7 +22,7 @@ batch_size = 150
 epochs = 20
 num_workers = 0 ###
 img_data_dir = 'D:/ninavv/phd/data/'
-csv_file_img = '../datafiles/metadata-clean-split.csv'
+csv_file_img = '../datafiles/'+FOLDER_SPECIFIC+'metadata-clean-split.csv'
 
 
 def freeze_model(model):
@@ -97,7 +97,7 @@ def main(hparams):
 
     # Create output directory
     out_name = 'densenet-all'
-    out_dir = 'chexpert/disease/' + out_name
+    out_dir = '/work3/ninwe/run/isic/disease/' + out_name
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
 
@@ -118,7 +118,7 @@ def main(hparams):
         max_epochs=epochs,
         gpus=hparams.gpus,
         accelerator="auto",
-        logger=TensorBoardLogger('chexpert/disease', name=out_name),
+        logger=TensorBoardLogger('isic/disease', name=out_name),
     )
     trainer.logger._default_hp_metric = False
     trainer.fit(model, data)
