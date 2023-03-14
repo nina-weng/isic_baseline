@@ -1,3 +1,6 @@
+import sys
+sys.path.append('../../isic_baseline')
+
 from dataloader.dataloader import ISICDataset,ISICDataModule
 from models import ResNet,DenseNet
 from data_preprocess.preprocess import FOLDER_SPECIFIC

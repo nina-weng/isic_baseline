@@ -36,8 +36,7 @@ class ISICDataset(Dataset):
 
         # self.labels = ['melanoma','nevus','basal cell carcinoma','actinic keratosis','benign keratosis','dermatofibroma',
         #   'vascular lesion','squamous cell carcinoma','others']
-        self.labels=['MEL',
-       'NV', 'BCC', 'AK', 'BKL', 'DF', 'VASC', 'SCC', 'UNK']
+        self.labels=['MEL','NV', 'BCC', 'AK', 'BKL', 'DF', 'VASC', 'SCC', 'UNK']
 
         self.augment = T.Compose([
             T.RandomHorizontalFlip(p=0.5),
@@ -45,7 +44,8 @@ class ISICDataset(Dataset):
         ])
 
         self.samples = []
-        for idx, _ in enumerate(tqdm(range(len(self.df_data)), desc='Loading Data')):
+        # for idx, _ in enumerate(tqdm(range(len(self.df_data)), desc='Loading Data')):
+        for idx in tqdm((self.df_data.index), desc='Loading Data'):
             img_path = img_data_dir + self.df_data.loc[idx, 'path_preproc']
             img_label = np.zeros(len(self.labels), dtype='float32')
             for i in range(0, len(self.labels)):
@@ -113,9 +113,9 @@ class ISICDataModule(pl.LightningDataModule):
         return DataLoader(self.test_set, self.batch_size, shuffle=False, num_workers=self.num_workers)
 
     def dataset_split(self,csv_all_img):
-        df= pd.read_csv(csv_all_img)
+        df= pd.read_csv(csv_all_img,header=0)
         df_train = df[df.split == "train"]
-        df_val = df[df.split == "validate"]
+        df_val = df[df.split == "valid"]
         df_test = df[df.split == "test"]
         return df_train,df_val,df_test
 
