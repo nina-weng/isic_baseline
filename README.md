@@ -18,6 +18,7 @@ Before running the experiment:
 1. Preprocess the csv file:
 
 run `./notebooks/csv_preprocess.ipynb` to get the clean and formatted csv file for training, which also includes split information.
+
 2. Preprocess the images:
 
 run `./data_preprocess/preprocess.py` to get pre-processed images. This step might take 1-2 hours.
