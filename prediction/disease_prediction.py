@@ -18,15 +18,20 @@ from tqdm import tqdm
 from argparse import ArgumentParser
 
 disease_labels = ['MEL', 'NV', 'BCC', 'AK', 'BKL', 'DF', 'VASC', 'SCC', 'UNK']
-
 num_classes = len(disease_labels)
 image_size = (224, 224)
+
+
+# parameters that could change
 batch_size = 64
 epochs = 20
 num_workers = 2 ###
+test_perc= 40
+model_choose = 'resnet' # or 'densenet'
+
 # img_data_dir = '/work3/ninwe/dataset/isic/'
 img_data_dir = 'D:/ninavv/phd/data/isic/'
-csv_file_img = '../datafiles/'+FOLDER_SPECIFIC+'metadata-clean-split.csv'
+csv_file_img = '../datafiles/'+FOLDER_SPECIFIC+'metadata-clean-split-test{}.csv'.format(test_perc)
 
 
 def freeze_model(model):
@@ -96,7 +101,10 @@ def main(hparams):
                               num_workers=num_workers)
 
     # model
-    model_type = ResNet #DenseNet
+    if model_choose == 'resnet':
+        model_type = ResNet
+    elif model_choose == 'densenet':
+        model_type = DenseNet
     model = model_type(num_classes=num_classes)
 
     # Create output directory
