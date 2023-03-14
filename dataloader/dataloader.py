@@ -28,7 +28,7 @@ from argparse import ArgumentParser
 
 
 class ISICDataset(Dataset):
-    def __init__(self, img_data_dir, df_data, image_size, augmentation=False, pseudo_rgb = True):
+    def __init__(self, img_data_dir, df_data, image_size, augmentation=False, pseudo_rgb = False):
         self.df_data = df_data
         self.image_size = image_size
         self.do_augment = augmentation
@@ -68,6 +68,9 @@ class ISICDataset(Dataset):
 
         if self.pseudo_rgb:
             image = image.repeat(3, 1, 1)
+
+        image = image.squeeze(dim=0)
+        image = torch.permute(image,dims=(2,0,1))
 
         return {'image': image, 'label': label}
 

@@ -25,7 +25,7 @@ batch_size = 150
 epochs = 20
 num_workers = 0 ###
 # img_data_dir = '/work3/ninwe/dataset/isic/'
-img_data_dir = 'D:/ninavv/phd/data/'
+img_data_dir = 'D:/ninavv/phd/data/isic/'
 csv_file_img = '../datafiles/'+FOLDER_SPECIFIC+'metadata-clean-split.csv'
 
 
@@ -91,7 +91,7 @@ def main(hparams):
     data = ISICDataModule( img_data_dir=img_data_dir,
                            csv_file_img=csv_file_img,
                               image_size=image_size,
-                              pseudo_rgb=True,
+                              pseudo_rgb=False,
                               batch_size=batch_size,
                               num_workers=num_workers)
 
