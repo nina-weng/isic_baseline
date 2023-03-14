@@ -116,7 +116,7 @@ class ISICDataModule(pl.LightningDataModule):
         return DataLoader(self.test_set, self.batch_size, shuffle=False, num_workers=self.num_workers)
 
     def dataset_split(self,csv_all_img):
-        df= pd.read_csv(csv_all_img,header=0)
+        df= pd.read_csv(csv_all_img,header=0,index=False)
         df_train = df[df.split == "train"]
         df_val = df[df.split == "valid"]
         df_test = df[df.split == "test"]

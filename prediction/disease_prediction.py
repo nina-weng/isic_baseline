@@ -21,9 +21,9 @@ disease_labels = ['MEL', 'NV', 'BCC', 'AK', 'BKL', 'DF', 'VASC', 'SCC', 'UNK']
 
 num_classes = len(disease_labels)
 image_size = (224, 224)
-batch_size = 150
+batch_size = 64
 epochs = 20
-num_workers = 0 ###
+num_workers = 2 ###
 # img_data_dir = '/work3/ninwe/dataset/isic/'
 img_data_dir = 'D:/ninavv/phd/data/isic/'
 csv_file_img = '../datafiles/'+FOLDER_SPECIFIC+'metadata-clean-split.csv'
@@ -96,11 +96,11 @@ def main(hparams):
                               num_workers=num_workers)
 
     # model
-    model_type = DenseNet
+    model_type = ResNet #DenseNet
     model = model_type(num_classes=num_classes)
 
     # Create output directory
-    out_name = 'densenet-all'
+    out_name = str(model.model_name)
     out_dir = '/work3/ninwe/run/isic/disease/' + out_name
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
@@ -122,7 +122,7 @@ def main(hparams):
         max_epochs=epochs,
         gpus=hparams.gpus,
         accelerator="auto",
-        logger=TensorBoardLogger('isic/disease', name=out_name),
+        logger=TensorBoardLogger('/work3/ninwe/run/isic/disease/', name=out_name),
     )
     trainer.logger._default_hp_metric = False
     trainer.fit(model, data)

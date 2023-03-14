@@ -10,6 +10,7 @@ import torch.nn.functional as F
 class ResNet(pl.LightningModule):
     def __init__(self, num_classes):
         super().__init__()
+        self.model_name = 'resnet'
         self.num_classes = num_classes
         self.model = models.resnet34(pretrained=True)
         # freeze_model(self.model)
@@ -61,6 +62,7 @@ class ResNet(pl.LightningModule):
 class DenseNet(pl.LightningModule):
     def __init__(self, num_classes):
         super().__init__()
+        self.model_name = 'densenet'
         self.num_classes = num_classes
         self.model = models.densenet121(pretrained=True)
         # freeze_model(self.model)
