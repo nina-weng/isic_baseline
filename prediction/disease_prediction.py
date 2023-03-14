@@ -24,6 +24,7 @@ image_size = (224, 224)
 batch_size = 150
 epochs = 20
 num_workers = 0 ###
+# img_data_dir = '/work3/ninwe/dataset/isic/'
 img_data_dir = 'D:/ninavv/phd/data/'
 csv_file_img = '../datafiles/'+FOLDER_SPECIFIC+'metadata-clean-split.csv'
 

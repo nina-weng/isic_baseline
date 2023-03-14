@@ -10,6 +10,7 @@ import numpy as np
 FOLDER_SPECIFIC='ISIC_2019_' # or ''
 
 # point to the parent directory that contains the folder 'isic_images'
+# img_data_dir = '/work3/ninwe/dataset/isic/'
 img_data_dir = 'D:\\ninavv\\phd\\data\\isic\\'
 csv_file = '../datafiles/'+FOLDER_SPECIFIC+'metadata-clean-split.csv'
 
