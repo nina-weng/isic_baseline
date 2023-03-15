@@ -8,7 +8,7 @@ import torch.nn.functional as F
 
 
 class ResNet(pl.LightningModule):
-    def __init__(self, num_classes):
+    def __init__(self, num_classes,lr):
         super().__init__()
         self.model_name = 'resnet'
         self.num_classes = num_classes
@@ -16,6 +16,7 @@ class ResNet(pl.LightningModule):
         # freeze_model(self.model)
         num_features = self.model.fc.in_features
         self.model.fc = nn.Linear(num_features, self.num_classes)
+        self.lr=lr
 
     def remove_head(self):
         num_features = self.model.fc.in_features
@@ -30,7 +31,7 @@ class ResNet(pl.LightningModule):
         for param in self.parameters():
             if param.requires_grad == True:
                 params_to_update.append(param)
-        optimizer = torch.optim.Adam(params_to_update, lr=0.001)
+        optimizer = torch.optim.Adam(params_to_update, lr=self.lr)
         return optimizer
 
     def unpack_batch(self, batch):

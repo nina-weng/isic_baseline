@@ -28,9 +28,12 @@ epochs = 20
 num_workers = 2 ###
 test_perc= 40
 model_choose = 'resnet' # or 'densenet'
+lr=1e-4
 
-# img_data_dir = '/work3/ninwe/dataset/isic/'
-img_data_dir = 'D:/ninavv/phd/data/isic/'
+run_config='{}-tp{}-lr{}'.format(model_choose,test_perc,lr)
+
+img_data_dir = '/work3/ninwe/dataset/isic/'
+#img_data_dir = 'D:/ninavv/phd/data/isic/'
 csv_file_img = '../datafiles/'+FOLDER_SPECIFIC+'metadata-clean-split-test{}.csv'.format(test_perc)
 
 
@@ -105,11 +108,11 @@ def main(hparams):
         model_type = ResNet
     elif model_choose == 'densenet':
         model_type = DenseNet
-    model = model_type(num_classes=num_classes)
+    model = model_type(num_classes=num_classes,lr=lr)
 
     # Create output directory
-    out_name = str(model.model_name)
-    out_dir = '/work3/ninwe/run/isic/disease/' + out_name
+    #out_name = str(model.model_name)
+    out_dir = '/work3/ninwe/run/isic/disease/' + run_config
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
 
@@ -130,7 +133,7 @@ def main(hparams):
         max_epochs=epochs,
         gpus=hparams.gpus,
         accelerator="auto",
-        logger=TensorBoardLogger('/work3/ninwe/run/isic/disease/', name=out_name),
+        logger=TensorBoardLogger('/work3/ninwe/run/isic/disease/', name=run_config),
     )
     trainer.logger._default_hp_metric = False
     trainer.fit(model, data)
