@@ -5,7 +5,7 @@ from PIL import Image
 import math
 from skimage import io, color
 import torch
-
+global_count=0
 image_size=(224,224)
 
 # Hair removal for ITA calculation
@@ -25,6 +25,9 @@ def hair_remove(image):
 
 # Calculates Fitzpatrick skin type of an image using Kinyanjui et al.'s thresholds
 def get_sample_ita_kin(path):
+    global global_count
+    global_count+=1
+    print('current count: {}'.format(global_count))
     ita_bnd_kin = -1
     try:
         rgb = io.imread(path)
@@ -33,8 +36,8 @@ def get_sample_ita_kin(path):
         ita_lst = []
         ita_bnd_lst = []
 
-        xloc_start = [ 230,5,115,216,216,20,20]
-        yloc_start = [115,115,5,230,216,20,216]
+        xloc_start = [  230,    5,  115,    115,    216,    216,    20, 20]
+        yloc_start = [  115,    115,5,      230,    216,    20,    20, 216]
 
         scale=image_size[0]/256
 
@@ -46,7 +49,7 @@ def get_sample_ita_kin(path):
         L_lst=[]
         b_lst=[]
 
-        for i in range(7):
+        for i in range(len(xloc_start)):
             # Taking samples from different parts of the image
             L_lst.append(lab[xloc_start[i]:xloc_start[i]+interval, yloc_start[i]:yloc_start[i]+interval, 0].mean())
             b_lst.append(lab[xloc_start[i]:xloc_start[i] + interval, yloc_start[i]:yloc_start[i] + interval, 2].mean())
@@ -74,7 +77,7 @@ def get_sample_ita_kin(path):
         if ita_max <= 10:
             ita_bnd_kin = 6
     except Exception:
-        pass
+        raise Exception
 
     return ita_bnd_kin
 

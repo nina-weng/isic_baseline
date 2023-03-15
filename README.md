@@ -18,6 +18,7 @@ Before running the experiment:
 1. Preprocess the csv file:
 
 run `./notebooks/csv_preprocess.ipynb` to get the clean and formatted csv file for training, which also includes split information.
+(skin tone extraction: implementation is from [here](https://github.com/pbevan1/Detecting-Melanoma-Fairly))
 
 2. Preprocess the images:
 
