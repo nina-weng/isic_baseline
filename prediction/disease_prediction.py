@@ -30,7 +30,7 @@ test_perc= 40
 model_choose = 'resnet' # or 'densenet'
 lr=1e-4
 
-run_config='{}-tp{}-lr{}'.format(model_choose,test_perc,lr)
+run_config='{}-tp{}-lr{}-ep{}'.format(model_choose,test_perc,lr,epochs)
 
 img_data_dir = '/work3/ninwe/dataset/isic/'
 #img_data_dir = 'D:/ninavv/phd/data/isic/'
