@@ -18,7 +18,7 @@ from tqdm import tqdm
 from argparse import ArgumentParser
 
 
-
+num_classes = len(DISEASE_LABELS)
 image_size = (224, 224)
 
 
