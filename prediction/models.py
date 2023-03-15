@@ -18,7 +18,7 @@ class ResNet(pl.LightningModule):
         num_features = self.model.fc.in_features
         self.model.fc = nn.Linear(num_features, self.num_classes)
         self.lr=lr
-        self.accu_func= Accuracy(task="multilabel", num_labels=8)
+        self.accu_func= Accuracy(task="multilabel", num_labels=num_classes)
 
     def remove_head(self):
         num_features = self.model.fc.in_features

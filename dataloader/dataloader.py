@@ -16,6 +16,7 @@ from skimage.io import imread
 from skimage.io import imsave
 from tqdm import tqdm
 from argparse import ArgumentParser
+from prediction.disease_prediction import DISEASE_LABELS
 
 
 
@@ -36,7 +37,7 @@ class ISICDataset(Dataset):
 
         # self.labels = ['melanoma','nevus','basal cell carcinoma','actinic keratosis','benign keratosis','dermatofibroma',
         #   'vascular lesion','squamous cell carcinoma','others']
-        self.labels=['MEL','NV', 'BCC', 'AK', 'BKL', 'DF', 'VASC', 'SCC', 'UNK']
+        self.labels=DISEASE_LABELS
 
         self.augment = T.Compose([
             T.RandomHorizontalFlip(p=0.5),

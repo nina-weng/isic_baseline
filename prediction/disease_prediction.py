@@ -17,8 +17,9 @@ from skimage.io import imsave
 from tqdm import tqdm
 from argparse import ArgumentParser
 
-disease_labels = ['MEL', 'NV', 'BCC', 'AK', 'BKL', 'DF', 'VASC', 'SCC', 'UNK']
-num_classes = len(disease_labels)
+# disease_labels = ['MEL', 'NV', 'BCC', 'AK', 'BKL', 'DF', 'VASC', 'SCC', 'UNK']
+DISEASE_LABELS = ['MEL', 'NV', 'BCC', 'AK', 'BKL', 'DF', 'VASC', 'SCC']
+num_classes = len(DISEASE_LABELS)
 image_size = (224, 224)
 
 
