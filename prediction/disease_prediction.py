@@ -1,7 +1,7 @@
 import sys
 sys.path.append('../../isic_baseline')
 
-from dataloader.dataloader import ISICDataset,ISICDataModule
+from dataloader.dataloader import ISICDataset,ISICDataModule,DISEASE_LABELS
 from models import ResNet,DenseNet
 from data_preprocess.preprocess import FOLDER_SPECIFIC
 
@@ -17,9 +17,8 @@ from skimage.io import imsave
 from tqdm import tqdm
 from argparse import ArgumentParser
 
-# disease_labels = ['MEL', 'NV', 'BCC', 'AK', 'BKL', 'DF', 'VASC', 'SCC', 'UNK']
-DISEASE_LABELS = ['MEL', 'NV', 'BCC', 'AK', 'BKL', 'DF', 'VASC', 'SCC']
-num_classes = len(DISEASE_LABELS)
+
+
 image_size = (224, 224)
 
 

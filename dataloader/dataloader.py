@@ -16,7 +16,6 @@ from skimage.io import imread
 from skimage.io import imsave
 from tqdm import tqdm
 from argparse import ArgumentParser
-from prediction.disease_prediction import DISEASE_LABELS
 
 
 
@@ -27,6 +26,8 @@ from prediction.disease_prediction import DISEASE_LABELS
 
 
 
+# disease_labels = ['MEL', 'NV', 'BCC', 'AK', 'BKL', 'DF', 'VASC', 'SCC', 'UNK']
+DISEASE_LABELS = ['MEL', 'NV', 'BCC', 'AK', 'BKL', 'DF', 'VASC', 'SCC']
 
 class ISICDataset(Dataset):
     def __init__(self, img_data_dir, df_data, image_size, augmentation=False, pseudo_rgb = False):
