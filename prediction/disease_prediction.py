@@ -24,13 +24,15 @@ image_size = (224, 224)
 
 # parameters that could change
 batch_size = 64
-epochs = 20
+epochs = 2
 num_workers = 2 ###
 test_perc= 40
 model_choose = 'resnet' # or 'densenet'
 lr=1e-4
+pretrained = True
+augmentation = True
 
-run_config='{}-tp{}-lr{}-ep{}'.format(model_choose,test_perc,lr,epochs)
+run_config='{}-tp{}-lr{}-ep{}-pt{}-aug{}'.format(model_choose,test_perc,lr,epochs,int(pretrained),int(augmentation))
 
 img_data_dir = '/work3/ninwe/dataset/isic/'
 #img_data_dir = 'D:/ninavv/phd/data/isic/'
@@ -108,7 +110,7 @@ def main(hparams):
         model_type = ResNet
     elif model_choose == 'densenet':
         model_type = DenseNet
-    model = model_type(num_classes=num_classes,lr=lr)
+    model = model_type(num_classes=num_classes,lr=lr,pretrained=pretrained)
 
     # Create output directory
     #out_name = str(model.model_name)
@@ -138,7 +140,9 @@ def main(hparams):
     trainer.logger._default_hp_metric = False
     trainer.fit(model, data)
 
-    model = model_type.load_from_checkpoint(trainer.checkpoint_callback.best_model_path, num_classes=num_classes,lr=lr)
+    model = model_type.load_from_checkpoint(trainer.checkpoint_callback.best_model_path,
+                                            num_classes=num_classes,lr=lr,pretrained=pretrained,
+                                            )
 
     use_cuda = torch.cuda.is_available()
     device = torch.device("cuda:" + str(hparams.dev) if use_cuda else "cpu")

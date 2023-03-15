@@ -4,19 +4,21 @@ import torch.nn as nn
 import torch
 import torchvision
 import torch.nn.functional as F
-
+from torchmetrics import Accuracy
 
 
 class ResNet(pl.LightningModule):
-    def __init__(self, num_classes,lr):
+    def __init__(self, num_classes,lr,pretrained):
         super().__init__()
         self.model_name = 'resnet'
         self.num_classes = num_classes
-        self.model = models.resnet34(pretrained=True)
+        self.pretrained=pretrained
+        self.model = models.resnet34(pretrained=self.pretrained)
         # freeze_model(self.model)
         num_features = self.model.fc.in_features
         self.model.fc = nn.Linear(num_features, self.num_classes)
         self.lr=lr
+        self.accu_func= Accuracy(task="multilabel", num_labels=8)
 
     def remove_head(self):
         num_features = self.model.fc.in_features
@@ -42,22 +44,27 @@ class ResNet(pl.LightningModule):
         out = self.forward(img)
         prob = torch.sigmoid(out)
         loss = F.binary_cross_entropy(prob, lab)
-        return loss
+
+        multi_accu = self.accu_func(prob, lab)
+        return loss,multi_accu
 
     def training_step(self, batch, batch_idx):
-        loss = self.process_batch(batch)
+        loss,multi_accu = self.process_batch(batch)
         self.log('train_loss', loss)
-        grid = torchvision.utils.make_grid(batch['image'][0:4, ...], nrow=2, normalize=True)
-        self.logger.experiment.add_image('images', grid, self.global_step)
+        self.log('train_accu', multi_accu)
+        # grid = torchvision.utils.make_grid(batch['image'][0:4, ...], nrow=2, normalize=True)
+        # self.logger.experiment.add_image('images', grid, self.global_step)
         return loss
 
     def validation_step(self, batch, batch_idx):
-        loss = self.process_batch(batch)
+        loss, multi_accu= self.process_batch(batch)
         self.log('val_loss', loss)
+        self.log('val_accu', multi_accu)
 
     def test_step(self, batch, batch_idx):
-        loss = self.process_batch(batch)
+        loss,multi_accu = self.process_batch(batch)
         self.log('test_loss', loss)
+        self.log('test_accu', multi_accu)
 
 
 class DenseNet(pl.LightningModule):

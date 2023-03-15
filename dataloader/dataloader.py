@@ -83,7 +83,7 @@ class ISICDataset(Dataset):
 
 
 class ISICDataModule(pl.LightningDataModule):
-    def __init__(self, img_data_dir,csv_file_img, image_size, pseudo_rgb, batch_size, num_workers):
+    def __init__(self, img_data_dir,csv_file_img, image_size, pseudo_rgb, batch_size, num_workers,augmentation):
         super().__init__()
         self.img_data_dir = img_data_dir
         self.csv_file_img = csv_file_img
@@ -96,9 +96,10 @@ class ISICDataModule(pl.LightningDataModule):
         self.image_size = image_size
         self.batch_size = batch_size
         self.num_workers = num_workers
+        self.augmentation=augmentation
 
 
-        self.train_set = ISICDataset(self.img_data_dir,self.df_train, self.image_size, augmentation=True, pseudo_rgb=pseudo_rgb)
+        self.train_set = ISICDataset(self.img_data_dir,self.df_train, self.image_size, augmentation=augmentation, pseudo_rgb=pseudo_rgb)
         self.val_set = ISICDataset(self.img_data_dir,self.df_valid, self.image_size, augmentation=False, pseudo_rgb=pseudo_rgb)
         self.test_set = ISICDataset(self.img_data_dir,self.df_test, self.image_size, augmentation=False, pseudo_rgb=pseudo_rgb)
 
