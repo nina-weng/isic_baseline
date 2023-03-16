@@ -4,7 +4,8 @@ import torch.nn as nn
 import torch
 import torchvision
 import torch.nn.functional as F
-from torchmetrics import Accuracy
+from torchmetrics import Accuracy,AUROC
+from torchmetrics.classification import MultilabelAUROC
 
 
 class ResNet(pl.LightningModule):
@@ -20,6 +21,7 @@ class ResNet(pl.LightningModule):
 
         self.lr=lr
         self.accu_func= Accuracy(task="multilabel", num_labels=num_classes)
+        self.auroc_func = MultilabelAUROC(num_labels=num_classes,average='macro', thresholds=None)
 
     def remove_head(self):
         num_features = self.model.fc.in_features
@@ -47,25 +49,29 @@ class ResNet(pl.LightningModule):
         loss = F.binary_cross_entropy(prob, lab)
 
         multi_accu = self.accu_func(prob, lab)
-        return loss,multi_accu
+        multi_auroc = self.auroc_func(prob,lab)
+        return loss,multi_accu,multi_auroc
 
     def training_step(self, batch, batch_idx):
-        loss,multi_accu = self.process_batch(batch)
+        loss,multi_accu,multi_auroc = self.process_batch(batch)
         self.log('train_loss', loss)
         self.log('train_accu', multi_accu)
+        self.log('train_auroc', multi_auroc)
         # grid = torchvision.utils.make_grid(batch['image'][0:4, ...], nrow=2, normalize=True)
         # self.logger.experiment.add_image('images', grid, self.global_step)
         return loss
 
     def validation_step(self, batch, batch_idx):
-        loss, multi_accu= self.process_batch(batch)
+        loss, multi_accu, multi_auroc = self.process_batch(batch)
         self.log('val_loss', loss)
         self.log('val_accu', multi_accu)
+        self.log('val_auroc', multi_auroc)
 
     def test_step(self, batch, batch_idx):
-        loss,multi_accu = self.process_batch(batch)
+        loss,multi_accu,multi_auroc = self.process_batch(batch)
         self.log('test_loss', loss)
         self.log('test_accu', multi_accu)
+        self.log('test_auroc', multi_auroc)
 
 
 class DenseNet(pl.LightningModule):
@@ -80,6 +86,7 @@ class DenseNet(pl.LightningModule):
         self.lr = lr
         self.pretrained = pretrained
         self.accu_func = Accuracy(task="multilabel", num_labels=num_classes)
+        self.auroc_func = MultilabelAUROC(num_labels=num_classes, average='macro', thresholds=None)
 
     def remove_head(self):
         num_features = self.model.classifier.in_features
@@ -105,23 +112,28 @@ class DenseNet(pl.LightningModule):
         out = self.forward(img)
         prob = torch.sigmoid(out)
         loss = F.binary_cross_entropy(prob, lab)
+
         multi_accu = self.accu_func(prob, lab)
-        return loss, multi_accu
+        multi_auroc = self.auroc_func(prob, lab)
+        return loss, multi_accu, multi_auroc
 
     def training_step(self, batch, batch_idx):
-        loss,multi_accu =self.process_batch(batch)
+        loss, multi_accu, multi_auroc = self.process_batch(batch)
         self.log('train_loss', loss)
+        self.log('train_accu', multi_accu)
+        self.log('train_auroc', multi_auroc)
         # grid = torchvision.utils.make_grid(batch['image'][0:4, ...], nrow=2, normalize=True)
         # self.logger.experiment.add_image('images', grid, self.global_step)
-        self.log('train_accu', multi_accu)
         return loss
 
     def validation_step(self, batch, batch_idx):
-        loss,multi_accu = self.process_batch(batch)
+        loss, multi_accu, multi_auroc = self.process_batch(batch)
         self.log('val_loss', loss)
         self.log('val_accu', multi_accu)
+        self.log('val_auroc', multi_auroc)
 
     def test_step(self, batch, batch_idx):
-        loss,multi_accu = self.process_batch(batch)
+        loss, multi_accu, multi_auroc = self.process_batch(batch)
         self.log('test_loss', loss)
         self.log('test_accu', multi_accu)
+        self.log('test_auroc', multi_auroc)
