@@ -49,7 +49,7 @@ class ResNet(pl.LightningModule):
         loss = F.binary_cross_entropy(prob, lab)
 
         multi_accu = self.accu_func(prob, lab)
-        multi_auroc = self.auroc_func(prob,lab)
+        multi_auroc = self.auroc_func(prob,lab.long())
         return loss,multi_accu,multi_auroc
 
     def training_step(self, batch, batch_idx):
@@ -114,7 +114,7 @@ class DenseNet(pl.LightningModule):
         loss = F.binary_cross_entropy(prob, lab)
 
         multi_accu = self.accu_func(prob, lab)
-        multi_auroc = self.auroc_func(prob, lab)
+        multi_auroc = self.auroc_func(prob, lab.long())
         return loss, multi_accu, multi_auroc
 
     def training_step(self, batch, batch_idx):
