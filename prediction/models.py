@@ -137,3 +137,13 @@ class DenseNet(pl.LightningModule):
         self.log('test_loss', loss)
         self.log('test_accu', multi_accu)
         self.log('test_auroc', multi_auroc)
+
+    def test_step_end(self, output_results):
+        prob, lab = output_results
+        loss = F.binary_cross_entropy(prob, lab)
+
+        multi_accu = self.accu_func(prob, lab)
+        multi_auroc = self.auroc_func(prob, lab.long())
+        self.log('test_loss', loss,epoch_end=True)
+        self.log('test_accu', multi_accu,epoch_end=True)
+        self.log('test_auroc', multi_auroc,epoch_end=True)
