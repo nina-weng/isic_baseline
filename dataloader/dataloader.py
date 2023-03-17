@@ -42,6 +42,7 @@ class ISICDataset(Dataset):
 
         self.augment = T.Compose([
             T.RandomHorizontalFlip(p=0.5),
+            T.RandomVerticalFlip(p=0.5),
             T.RandomApply(transforms=[T.RandomAffine(degrees=15, scale=(0.9, 1.1))], p=0.5),
         ])
 
