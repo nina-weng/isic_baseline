@@ -45,7 +45,6 @@ class ISICDataset(Dataset):
             T.RandomVerticalFlip(p=0.5),
             T.RandomApply(transforms=[T.RandomAffine(degrees=15, scale=(0.9, 1.1))], p=0.5),
             T.RandomApply([T.ColorJitter(brightness=0.2, contrast=0.2)], p=0.5),
-
         ])
 
         self.samples = []
@@ -68,14 +67,16 @@ class ISICDataset(Dataset):
         image = torch.from_numpy(sample['image']).unsqueeze(0)
         label = torch.from_numpy(sample['label'])
 
+        image = image.squeeze(dim=0)
+        image = torch.permute(image, dims=(2, 0, 1))
+
         if self.do_augment:
             image = self.augment(image)
 
         if self.pseudo_rgb:
             image = image.repeat(3, 1, 1)
 
-        image = image.squeeze(dim=0)
-        image = torch.permute(image,dims=(2,0,1))
+
 
         return {'image': image, 'label': label}
 

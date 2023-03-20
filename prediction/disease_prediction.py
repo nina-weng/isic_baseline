@@ -123,7 +123,7 @@ def main(hparams):
     if not os.path.exists(temp_dir):
         os.makedirs(temp_dir)
 
-    for idx in range(0,5):
+    for idx in range(0,10):
         sample = data.train_set.get_sample(idx)
         imsave(os.path.join(temp_dir, 'sample_' + str(idx) + '.jpg'), sample['image'].astype(np.uint8))
 
