@@ -27,8 +27,8 @@ batch_size = 64
 epochs = 2
 num_workers = 2 ###
 test_perc= 40
-model_choose = 'resnet' # or 'densenet'
-lr=1e-4
+model_choose = 'densenet' # or 'densenet'
+lr=1e-5
 pretrained = True
 augmentation = True
 
@@ -37,6 +37,13 @@ run_config='{}-tp{}-lr{}-ep{}-pt{}-aug{}'.format(model_choose,test_perc,lr,epoch
 img_data_dir = '/work3/ninwe/dataset/isic/'
 #img_data_dir = 'D:/ninavv/phd/data/isic/'
 csv_file_img = '../datafiles/'+FOLDER_SPECIFIC+'metadata-clean-split-test{}.csv'.format(test_perc)
+
+
+def get_cur_version(dir_path):
+    i = 0
+    while os.path.exists(dir_path+'/version_{}'.format(i)):
+        i+=1
+    return i
 
 
 def freeze_model(model):
@@ -94,6 +101,8 @@ def embeddings(model, data_loader, device):
 
 def main(hparams):
 
+
+
     # sets seeds for numpy, torch, python.random and PYTHONHASHSEED.
     pl.seed_everything(42, workers=True)
 
@@ -129,6 +138,9 @@ def main(hparams):
 
     checkpoint_callback = ModelCheckpoint(monitor="val_loss", mode='min')
 
+    dir_path = '/work3/ninwe/run/isic/disease/'+run_config
+    cur_version = get_cur_version(dir_path)
+
     # train
     trainer = pl.Trainer(
         callbacks=[checkpoint_callback],
@@ -136,7 +148,7 @@ def main(hparams):
         max_epochs=epochs,
         gpus=hparams.gpus,
         accelerator="auto",
-        logger=TensorBoardLogger('/work3/ninwe/run/isic/disease/', name=run_config),
+        logger=TensorBoardLogger('/work3/ninwe/run/isic/disease/', name=run_config,version=cur_version),
     )
     trainer.logger._default_hp_metric = False
     trainer.fit(model, data)
@@ -160,7 +172,7 @@ def main(hparams):
     df_logits = pd.DataFrame(data=logits_val, columns=cols_names_logits)
     df_targets = pd.DataFrame(data=targets_val, columns=cols_names_targets)
     df = pd.concat([df, df_logits, df_targets], axis=1)
-    df.to_csv(os.path.join(out_dir, 'predictions.val.csv'), index=False)
+    df.to_csv(os.path.join(out_dir, 'predictions.val.version_{}.csv'.format(cur_version)), index=False)
 
     print('TESTING')
     preds_test, targets_test, logits_test = test_func(model, data.test_dataloader(), device)
@@ -168,7 +180,7 @@ def main(hparams):
     df_logits = pd.DataFrame(data=logits_test, columns=cols_names_logits)
     df_targets = pd.DataFrame(data=targets_test, columns=cols_names_targets)
     df = pd.concat([df, df_logits, df_targets], axis=1)
-    df.to_csv(os.path.join(out_dir, 'predictions.test.csv'), index=False)
+    df.to_csv(os.path.join(out_dir, 'predictions.test.version_{}.csv'.format(cur_version)), index=False)
 
     print('EMBEDDINGS')
 
@@ -178,13 +190,13 @@ def main(hparams):
     df = pd.DataFrame(data=embeds_val)
     df_targets = pd.DataFrame(data=targets_val, columns=cols_names_targets)
     df = pd.concat([df, df_targets], axis=1)
-    df.to_csv(os.path.join(out_dir, 'embeddings.val.csv'), index=False)
+    df.to_csv(os.path.join(out_dir, 'embeddings.val.version_{}.csv'.format(cur_version)), index=False)
 
     embeds_test, targets_test = embeddings(model, data.test_dataloader(), device)
     df = pd.DataFrame(data=embeds_test)
     df_targets = pd.DataFrame(data=targets_test, columns=cols_names_targets)
     df = pd.concat([df, df_targets], axis=1)
-    df.to_csv(os.path.join(out_dir, 'embeddings.test.csv'), index=False)
+    df.to_csv(os.path.join(out_dir, 'embeddings.test.version_{}.csv'.format(cur_version)), index=False)
 
 
 if __name__ == '__main__':
