@@ -44,6 +44,8 @@ class ISICDataset(Dataset):
             T.RandomHorizontalFlip(p=0.5),
             T.RandomVerticalFlip(p=0.5),
             T.RandomApply(transforms=[T.RandomAffine(degrees=15, scale=(0.9, 1.1))], p=0.5),
+            T.RandomApply([T.ColorJitter(brightness=0.2, contrast=0.2)], p=0.5),
+
         ])
 
         self.samples = []
