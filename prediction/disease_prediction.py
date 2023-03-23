@@ -128,7 +128,9 @@ def main(hparams):
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
 
-    temp_dir = os.path.join(out_dir, 'temp')
+    cur_version = get_cur_version(out_dir)
+
+    temp_dir = os.path.join(out_dir, 'temp_version_{}'.format(cur_version))
     if not os.path.exists(temp_dir):
         os.makedirs(temp_dir)
 
@@ -146,8 +148,7 @@ def main(hparams):
 
     checkpoint_callback = ModelCheckpoint(monitor="val_loss", mode='min')
 
-    dir_path = '/work3/ninwe/run/isic/disease/'+run_config
-    cur_version = get_cur_version(dir_path)
+
 
     # train
     trainer = pl.Trainer(
