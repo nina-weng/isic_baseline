@@ -1,11 +1,19 @@
+import torchvision.transforms.functional
+
 from prediction.models import DenseNet,ResNet
 import os
 from dataloader.dataloader import ISICDataModule
 from data_preprocess.preprocess import FOLDER_SPECIFIC
-from prediction.disease_prediction import image_size,batch_size,args,num_classes
+from prediction.disease_prediction import image_size,batch_size,num_classes
 import torch
 from tqdm import tqdm
+import torchvision.transforms.functional as F
+import torchvision.transforms as T
 
+import cv2
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
 
 
 # hyperparameters
@@ -15,29 +23,35 @@ version_no = 6
 
 checkpoint_dir = run_dir + run_config + '/version_' + str(version_no) + '/checkpoints/'
 filenames = os.listdir(checkpoint_dir)
-filenames = [each if each.endswith('.ckpt') for each in filenames]
+filenames = [each for each in filenames if each.endswith('.ckpt')]
 
 assert len(filenames) == 1, 'more than one checkpoints file in dir'
 
 checkpoint_path = checkpoint_dir + filenames[0]
 
-test_perc =int(run_config.split('-')[1][:2])
+test_perc =int(run_config.split('-')[1][2:])
+
+model_type = run_config.split('-')[0]
+model_type = DenseNet if model_type=='densenet' else ResNet
 
 # img_data_dir = '/work3/ninwe/dataset/isic/'
 img_data_dir = 'D:/ninavv/phd/data/isic/'
 csv_file_img = '../datafiles/'+FOLDER_SPECIFIC+'metadata-clean-split-test{}.csv'.format(test_perc)
 
 
-def test_counterfactual(model, data_loader, device, counterfactual='lighting_overall'):
+def test_counterfactual(model, data_loader, device, counterfactual=False,ct='lighting_all',bf=1.5):
     '''
 
     :param model:
     :param data_loader:
     :param device:
-    :param counterfactual:
+    :param counterfactual: bool, True or False
+    :param ct: refers counterfactual type
         counterfactual operations:
-        'lighting': do lighting augments on image
-
+        'lighting_all': adjust the lighting of the whole image
+        'lighting_skin': adjust the lighting only on the skin part - segmentation needed in the first place
+                #TODO
+    :param bf: stands for brightness factor, 0->black, 1->original img, 2->brighter
     :return:
     '''
     model.eval()
@@ -49,7 +63,36 @@ def test_counterfactual(model, data_loader, device, counterfactual='lighting_ove
 
     with torch.no_grad():
         for index, batch in enumerate(tqdm(data_loader, desc='Test-loop')):
-            img, lab = batch['image'].to(device), batch['label'].to(device)
+            img, lab = batch['image'].to(device), batch['label'].to(device) # img shape: (bs,3,224,224)
+
+            if counterfactual:
+                if ct=='light_all':
+                    # img_c = T.ColorJitter(brightness =0.5)(img)
+                    img_c = F.adjust_brightness(img,brightness_factor=0.5)
+                    if index==0:
+                        print('print some lighting-changed imgs')
+                        for i in range(0,5):
+                            fig, axs = plt.subplots(ncols=2,squeeze=False)
+                            single_img = img[i]
+                            single_img = single_img.detach()
+                            # single_img = F.to_pil_image(single_img)
+                            # single_img_c = F.to_pil_image(img_c[i].detach())
+
+                            axs[0,0].imshow(img[i].permute(1, 2, 0)) # img[i].permute -> (224,224,3)
+                            axs[0,0].set_title('original img,index:{}'.format(i))
+
+                            axs[0,0].axis('off')
+
+                            axs[0,1].imshow(img_c[i].permute(1, 2, 0))
+                            axs[0,1].set_title('{},bf:{},index:{}'.format(ct, bf, i))
+
+                            axs[0,1].axis('off')
+                            plt.show()
+                else:
+                    raise Exception('Not implemented.')
+
+            if counterfactual:
+                img = img_c
 
             out = model(img)
             pred = torch.sigmoid(out)
@@ -78,17 +121,11 @@ def main(checkpoint_path):
     :return:
     '''
 
-    info_ = checkpoint_path.split('/')
-    run_config = info_[-3]
-    print('run_config:{}'.format(run_config))
-
-    model_type = run_config.split('-')[0]
-    model_type = DenseNet if model_type=='densenet' else ResNet
-
     # load pretrained model
-    model = model_type.load_from_checkpoint(checkpoint_path=checkpoint_path)
+    model = model_type.load_from_checkpoint(checkpoint_path=checkpoint_path,
+                                            num_classes=num_classes,lr=1e-5,pretrained=True)
     use_cuda = torch.cuda.is_available()
-    device = torch.device("cuda:" + str(args.dev) if use_cuda else "cpu")
+    device = torch.device("cuda:" + str(0) if use_cuda else "cpu")
 
     model.to(device)
     model.eval()
@@ -101,7 +138,30 @@ def main(checkpoint_path):
                           pseudo_rgb=False,
                           batch_size=batch_size,
                           num_workers=0,
-                          augmentation=False)
+                          augmentation=True)
+
+    cols_names_classes = ['class_' + str(i) for i in range(0, num_classes)]
+    cols_names_logits = ['logit_' + str(i) for i in range(0, num_classes)]
+    cols_names_targets = ['target_' + str(i) for i in range(0, num_classes)]
+
+    out_dir = run_dir + run_config
+
+
+    # config on counterfactual
+    counterfactual = True
+    ct = 'light_all'
+    bf = 1.0
+
+    print('TESTING')
+    preds_test, targets_test, logits_test = test_counterfactual(model, data.test_dataloader(), device,
+                                                                counterfactual=counterfactual,
+                                                                ct=ct,
+                                                                bf=bf)
+    df = pd.DataFrame(data=preds_test, columns=cols_names_classes)
+    df_logits = pd.DataFrame(data=logits_test, columns=cols_names_logits)
+    df_targets = pd.DataFrame(data=targets_test, columns=cols_names_targets)
+    df = pd.concat([df, df_logits, df_targets], axis=1)
+    df.to_csv(os.path.join(out_dir, 'predictions.test.version_{}.{}-{}.csv'.format(version_no,ct,bf)), index=False)
 
 
 

@@ -2,7 +2,7 @@ import sys
 sys.path.append('../../isic_baseline')
 
 from dataloader.dataloader import ISICDataset,ISICDataModule,DISEASE_LABELS
-from models import ResNet,DenseNet
+from prediction.models import ResNet,DenseNet
 from data_preprocess.preprocess import FOLDER_SPECIFIC
 
 import os
@@ -35,7 +35,7 @@ augmentation = True
 run_config='{}-tp{}-lr{}-ep{}-pt{}-aug{}'.format(model_choose,test_perc,lr,epochs,int(pretrained),int(augmentation))
 
 img_data_dir = '/work3/ninwe/dataset/isic/'
-#img_data_dir = 'D:/ninavv/phd/data/isic/'
+# img_data_dir = 'D:/ninavv/phd/data/isic/'
 csv_file_img = '../datafiles/'+FOLDER_SPECIFIC+'metadata-clean-split-test{}.csv'.format(test_perc)
 
 
@@ -133,8 +133,16 @@ def main(hparams):
         os.makedirs(temp_dir)
 
     for idx in range(0,10):
-        sample = data.train_set.get_sample(idx)
-        imsave(os.path.join(temp_dir, 'sample_' + str(idx) + '.jpg'), sample['image'].astype(np.uint8))
+        if augmentation:
+            sample = data.train_set.exam_augmentation(idx)
+            sample = np.asarray(sample)
+            sample = np.transpose(sample, (2, 1, 0))
+            imsave(os.path.join(temp_dir, 'sample_' + str(idx) + '.jpg'), sample)
+        else:
+            sample = data.train_set.get_sample(idx) #PIL
+            sample = np.asarray(sample['image'])
+            sample = np.transpose(sample,(2,1,0))
+            imsave(os.path.join(temp_dir, 'sample_' + str(idx) + '.jpg'), sample)
 
     checkpoint_callback = ModelCheckpoint(monitor="val_loss", mode='min')
 

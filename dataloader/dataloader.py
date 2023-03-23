@@ -13,6 +13,7 @@ import pytorch_lightning as pl
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.callbacks import ModelCheckpoint
 from skimage.io import imread
+from PIL import Image
 from skimage.io import imsave
 from tqdm import tqdm
 from argparse import ArgumentParser
@@ -44,7 +45,7 @@ class ISICDataset(Dataset):
             T.RandomHorizontalFlip(p=0.5),
             T.RandomVerticalFlip(p=0.5),
             T.RandomApply(transforms=[T.RandomAffine(degrees=15, scale=(0.9, 1.1))], p=0.5),
-            T.RandomApply([T.ColorJitter(brightness=0.2, contrast=0.2)], p=0.5),
+            T.RandomApply([T.ColorJitter(brightness=0.5, contrast=0.5)], p=0.5),
         ])
 
         self.samples = []
@@ -64,11 +65,14 @@ class ISICDataset(Dataset):
     def __getitem__(self, item):
         sample = self.get_sample(item)
 
-        image = torch.from_numpy(sample['image']).unsqueeze(0)
+        # image = torch.from_numpy(sample['image'])
+        image = T.ToTensor()(sample['image'])
         label = torch.from_numpy(sample['label'])
 
-        image = image.squeeze(dim=0)
-        image = torch.permute(image, dims=(2, 0, 1))
+        # image = torch.permute(image, dims=(2, 0, 1))
+        ### image = image / 255
+
+
 
         if self.do_augment:
             image = self.augment(image)
@@ -78,14 +82,29 @@ class ISICDataset(Dataset):
 
 
 
+
+
         return {'image': image, 'label': label}
 
     def get_sample(self, item):
         sample = self.samples[item]
-        image = imread(sample['image_path']).astype(np.float32)
+        # image = imread(sample['image_path']).astype(np.float32)
+        image = Image.open(sample['image_path']) #PIL image
 
         return {'image': image, 'label': sample['label']}
 
+    def exam_augmentation(self,item):
+        assert self.do_augment == True, 'No need for non-augmentation experiments'
+
+        sample = self.get_sample(item) #PIL
+        image = T.ToTensor()(sample['image'])
+
+        if self.do_augment:
+            image_aug = self.augment(image)
+
+        image_all = torch.cat((image,image_aug),axis= 1)
+        assert image_all.shape[1]==224*2
+        return image_all
 
 
 class ISICDataModule(pl.LightningDataModule):
@@ -107,7 +126,7 @@ class ISICDataModule(pl.LightningDataModule):
 
         self.train_set = ISICDataset(self.img_data_dir,self.df_train, self.image_size, augmentation=augmentation, pseudo_rgb=pseudo_rgb)
         self.val_set = ISICDataset(self.img_data_dir,self.df_valid, self.image_size, augmentation=False, pseudo_rgb=pseudo_rgb)
-        self.test_set = ISICDataset(self.img_data_dir,self.df_test, self.image_size, augmentation=False, pseudo_rgb=pseudo_rgb)
+        self.test_set = ISICDataset(self.img_data_dir,self.df_test, self.image_size, augmentation=True, pseudo_rgb=pseudo_rgb)
 
         print('#train: ', len(self.train_set))
         print('#val:   ', len(self.val_set))
