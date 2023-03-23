@@ -16,7 +16,6 @@ from skimage.io import imread
 from PIL import Image
 from skimage.io import imsave
 from tqdm import tqdm
-from argparse import ArgumentParser
 
 
 
