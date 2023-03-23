@@ -5,6 +5,9 @@ os.environ['KMP_DUPLICATE_LIB_OK']='True'
 import torch
 from tqdm import tqdm
 
+import sys
+sys.path.append('../../isic_baseline')
+
 from prediction.disease_prediction import num_classes,image_size,batch_size
 from prediction.models import ResNet,DenseNet
 from data_preprocess.preprocess import FOLDER_SPECIFIC
