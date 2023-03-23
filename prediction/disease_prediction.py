@@ -25,14 +25,14 @@ image_size = (224, 224)
 # parameters that could change
 batch_size = 64
 epochs = 2
-num_workers = 2 ###
+num_workers = 1 ###
 test_perc= 40
 model_choose = 'densenet' # or 'densenet'
 lr=1e-5
 pretrained = True
 augmentation = True
 
-run_config='{}-tp{}-lr{}-ep{}-pt{}-aug{}'.format(model_choose,test_perc,lr,epochs,int(pretrained),int(augmentation))
+run_config='{}{}-tp{}-lr{}-ep{}-pt{}-aug{}'.format(FOLDER_SPECIFIC,model_choose,test_perc,lr,epochs,int(pretrained),int(augmentation))
 
 img_data_dir = '/work3/ninwe/dataset/isic/'
 # img_data_dir = 'D:/ninavv/phd/data/isic/'
