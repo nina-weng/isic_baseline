@@ -77,10 +77,9 @@ def main(checkpoint_path):
     with torch.no_grad():
         for index, batch in enumerate(tqdm(data.test_dataloader(), desc='Test-loop')):
             img, lab = batch['image'].to(device), batch['label'].to(device) # img shape: (bs,3,224,224)
-            for j in range(len(img)): # in one batch
-                x = img[j]
-                pred = la(x, link_approx='probit')
-                print(pred)
+
+            pred = la(img, link_approx='probit')
+            print(pred)
     print('End of test. Good job!!')
 
 if __name__ == '__main__':
