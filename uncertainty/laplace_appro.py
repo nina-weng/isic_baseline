@@ -14,9 +14,10 @@ from data_preprocess.preprocess import FOLDER_SPECIFIC
 from dataloader.dataloader import ISICDataModule
 
 # hyperparameters for loading the pre-trained model
-run_dir = 'D:/ninavv/phd/research/isic_results/disease/'
+# run_dir = 'D:/ninavv/phd/research/isic_results/disease/'
+run_dir = '/work3/ninwe/run/isic/disease/'
 run_config = 'densenet-tp40-lr1e-05-ep50-pt1-aug1'
-version_no = 6
+version_no = 3
 
 checkpoint_dir = run_dir + run_config + '/version_' + str(version_no) + '/checkpoints/'
 filenames = os.listdir(checkpoint_dir)
@@ -67,9 +68,12 @@ def main(checkpoint_path):
     la.fit(data.train_dataloader())
     print('End of LA Fitting.')
 
+    print('Optimize with Valid Set...')
     la.optimize_prior_precision(method='CV', val_loader=data.val_dataloader())
+    print('Finish Optimization.')
 
     # User-specified predictive approx.
+    print('Start testing...')
     with torch.no_grad():
         for index, batch in enumerate(tqdm(data.test_dataloader(), desc='Test-loop')):
             img, lab = batch['image'].to(device), batch['label'].to(device) # img shape: (bs,3,224,224)
@@ -77,7 +81,7 @@ def main(checkpoint_path):
                 x = img[j]
                 pred = la(x, link_approx='probit')
                 print(pred)
-
+    print('End of test. Good job!!')
 
 if __name__ == '__main__':
     print('start')

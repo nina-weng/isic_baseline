@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 # hyperparameters
 run_dir = 'D:/ninavv/phd/research/isic_results/disease/'
 run_config = 'densenet-tp40-lr1e-05-ep50-pt1-aug1'
-version_no = 6
+version_no = 3
 
 checkpoint_dir = run_dir + run_config + '/version_' + str(version_no) + '/checkpoints/'
 filenames = os.listdir(checkpoint_dir)
