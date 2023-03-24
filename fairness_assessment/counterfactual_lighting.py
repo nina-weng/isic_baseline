@@ -130,7 +130,7 @@ def main(checkpoint_path):
                           csv_file_img=csv_file_img,
                           image_size=image_size,
                           pseudo_rgb=False,
-                          batch_size=batch_size,
+                          batch_size=32,
                           num_workers=0,
                           augmentation=True)
 
@@ -144,7 +144,7 @@ def main(checkpoint_path):
     # config on counterfactual
     counterfactual = True
     ct = 'light_all'
-    bf = 1.0
+    bf = 0.5
 
     print('TESTING')
     preds_test, targets_test, logits_test = test_counterfactual(model, data.test_dataloader(), device,

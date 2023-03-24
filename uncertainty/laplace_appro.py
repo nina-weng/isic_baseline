@@ -16,8 +16,8 @@ from dataloader.dataloader import ISICDataModule
 # hyperparameters for loading the pre-trained model
 # run_dir = 'D:/ninavv/phd/research/isic_results/disease/'
 run_dir = '/work3/ninwe/run/isic/disease/'
-run_config = 'densenet-tp40-lr1e-05-ep50-pt1-aug1'
-version_no = 3
+run_config = 'ISIC_2019_densenet-tp40-lr1e-05-ep50-pt1-aug1'
+version_no = 0
 
 checkpoint_dir = run_dir + run_config + '/version_' + str(version_no) + '/checkpoints/'
 filenames = os.listdir(checkpoint_dir)
@@ -28,8 +28,8 @@ assert len(filenames) == 1, 'more than one checkpoints file in dir'
 checkpoint_path = checkpoint_dir + filenames[0]
 test_perc =int(run_config.split('-')[1][2:])
 
-model_type = run_config.split('-')[0]
-model_type = DenseNet if model_type=='densenet' else ResNet
+model_type = run_config.split('-')[0].split('_')[-1]
+model_type = ResNet if model_type=='resnet' else DenseNet
 
 img_data_dir = '/work3/ninwe/dataset/isic/'
 # img_data_dir = 'D:/ninavv/phd/data/isic/'
