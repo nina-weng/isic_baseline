@@ -15,6 +15,8 @@ if __name__ == '__main__':
     df = pd.read_csv(csv_file)
     preds = torch.tensor(df.iloc[:,:8].values)
     target = torch.tensor(df.iloc[:,16:].values,dtype=torch.int32)
+    # labels_again = torch.argmax(target, dim=1)
+
     res = auroc(preds, target)
     res2 =auroc2(preds, target)
     print(res)

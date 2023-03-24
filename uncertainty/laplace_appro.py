@@ -4,6 +4,7 @@ import os
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
 import torch
 from tqdm import tqdm
+import pandas as pd
 
 import sys
 sys.path.append('../../isic_baseline')
@@ -35,7 +36,9 @@ img_data_dir = '/work3/ninwe/dataset/isic/'
 # img_data_dir = 'D:/ninavv/phd/data/isic/'
 csv_file_img = '../datafiles/'+FOLDER_SPECIFIC+'metadata-clean-split-test{}.csv'.format(test_perc)
 
-
+out_dir = run_dir+run_config+'/laplace_approx_res/'
+if not os.path.exists(out_dir):
+    os.makedirs(out_dir)
 
 def main(checkpoint_path):
     # Pre-trained model
@@ -74,13 +77,41 @@ def main(checkpoint_path):
 
     # User-specified predictive approx.
     print('Start testing...')
+
+    logits = []
+    preds = []
+    targets = []
+
     with torch.no_grad():
         for index, batch in enumerate(tqdm(data.test_dataloader(), desc='Test-loop')):
             img, lab = batch['image'].to(device), batch['label'].to(device) # img shape: (bs,3,224,224)
 
-            pred = la(img, link_approx='probit')
-            print(pred)
-    print('End of test. Good job!!')
+            out = la(img, link_approx='probit')
+            print(out.shape)
+            pred = torch.sigmoid(out)
+            logits.append(out)
+            preds.append(pred)
+            targets.append(lab)
+
+        logits = torch.cat(logits, dim=0)
+        preds = torch.cat(preds, dim=0)
+        targets = torch.cat(targets, dim=0)
+
+
+    preds = preds.cpu().numpy()
+    targets=targets.cpu().numpy()
+    logits = logits.cpu().numpy()
+
+    cols_names_classes = ['class_' + str(i) for i in range(0, num_classes)]
+    cols_names_logits = ['logit_' + str(i) for i in range(0, num_classes)]
+    cols_names_targets = ['target_' + str(i) for i in range(0, num_classes)]
+
+    df = pd.DataFrame(data=preds, columns=cols_names_classes)
+    df_logits = pd.DataFrame(data=logits, columns=cols_names_logits)
+    df_targets = pd.DataFrame(data=targets, columns=cols_names_targets)
+    df = pd.concat([df, df_logits, df_targets], axis=1)
+    df.to_csv(os.path.join(out_dir, 'laplace_sample_{}.csv'.format(len(os.listdir(out_dir)))), index=False)
+
 
 if __name__ == '__main__':
     print('start')
