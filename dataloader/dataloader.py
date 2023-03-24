@@ -125,7 +125,7 @@ class ISICDataModule(pl.LightningDataModule):
 
         self.train_set = ISICDataset(self.img_data_dir,self.df_train, self.image_size, augmentation=augmentation, pseudo_rgb=pseudo_rgb)
         self.val_set = ISICDataset(self.img_data_dir,self.df_valid, self.image_size, augmentation=False, pseudo_rgb=pseudo_rgb)
-        self.test_set = ISICDataset(self.img_data_dir,self.df_test, self.image_size, augmentation=True, pseudo_rgb=pseudo_rgb)
+        self.test_set = ISICDataset(self.img_data_dir,self.df_test, self.image_size, augmentation=False, pseudo_rgb=pseudo_rgb)
 
         print('#train: ', len(self.train_set))
         print('#val:   ', len(self.val_set))

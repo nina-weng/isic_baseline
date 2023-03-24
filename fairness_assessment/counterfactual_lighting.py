@@ -18,8 +18,8 @@ import matplotlib.pyplot as plt
 
 # hyperparameters
 run_dir = 'D:/ninavv/phd/research/isic_results/disease/'
-run_config = 'densenet-tp40-lr1e-05-ep50-pt1-aug1'
-version_no = 3
+run_config = 'ISIC_2019_densenet-tp40-lr1e-05-ep50-pt1-aug1'
+version_no = 0
 
 checkpoint_dir = run_dir + run_config + '/version_' + str(version_no) + '/checkpoints/'
 filenames = os.listdir(checkpoint_dir)
@@ -31,8 +31,8 @@ checkpoint_path = checkpoint_dir + filenames[0]
 
 test_perc =int(run_config.split('-')[1][2:])
 
-model_type = run_config.split('-')[0]
-model_type = DenseNet if model_type=='densenet' else ResNet
+model_type = run_config.split('-')[0].split('_')[-1]
+model_type = ResNet if model_type=='resnet' else DenseNet
 
 # img_data_dir = '/work3/ninwe/dataset/isic/'
 img_data_dir = 'D:/ninavv/phd/data/isic/'
@@ -67,27 +67,21 @@ def test_counterfactual(model, data_loader, device, counterfactual=False,ct='lig
 
             if counterfactual:
                 if ct=='light_all':
-                    # img_c = T.ColorJitter(brightness =0.5)(img)
-                    img_c = F.adjust_brightness(img,brightness_factor=0.5)
+                    img_c = F.adjust_brightness(img,brightness_factor=bf)
+
                     if index==0:
                         print('print some lighting-changed imgs')
-                        for i in range(0,5):
-                            fig, axs = plt.subplots(ncols=2,squeeze=False)
-                            single_img = img[i]
-                            single_img = single_img.detach()
-                            # single_img = F.to_pil_image(single_img)
-                            # single_img_c = F.to_pil_image(img_c[i].detach())
-
-                            axs[0,0].imshow(img[i].permute(1, 2, 0)) # img[i].permute -> (224,224,3)
-                            axs[0,0].set_title('original img,index:{}'.format(i))
-
-                            axs[0,0].axis('off')
-
-                            axs[0,1].imshow(img_c[i].permute(1, 2, 0))
-                            axs[0,1].set_title('{},bf:{},index:{}'.format(ct, bf, i))
-
-                            axs[0,1].axis('off')
+                        for i in range(0, 5):
+                            fig, axs = plt.subplots(ncols=2, squeeze=False)
+                            axs[0, 0].imshow(img[i].permute(1, 2, 0))  # img[i].permute -> (224,224,3)
+                            axs[0, 0].set_title('original img,index:{}'.format(i))
+                            axs[0, 0].axis('off')
+                            axs[0, 1].imshow(img_c[i].permute(1, 2, 0))
+                            axs[0, 1].set_title('{},bf:{},index:{}'.format(ct, bf, i))
+                            axs[0, 1].axis('off')
                             plt.show()
+
+
                 else:
                     raise Exception('Not implemented.')
 

@@ -59,7 +59,7 @@ def main(checkpoint_path):
                           csv_file_img=csv_file_img,
                           image_size=image_size,
                           pseudo_rgb=False,
-                          batch_size=batch_size,
+                          batch_size=32,
                           num_workers=0,
                           augmentation=True)
 
